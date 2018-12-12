@@ -62,9 +62,7 @@ def part1 = {
     !changes
   }
 
-  val disqualified = new collection.mutable.HashSet[Int]
-  disqualified += FIELD_EMPTY
-  disqualified += FIELD_MULTIPLE
+  val disqualified = collection.mutable.HashSet[Int](FIELD_EMPTY, FIELD_MULTIPLE)
 
   for (x <- 0 until width) {
     disqualified += field(x, 0)
