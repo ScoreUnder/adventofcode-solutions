@@ -68,7 +68,7 @@ def part1 = {
     disqualified += field(x, height - 1)
   }
 
-  for (y <- 0 until height) {
+  for (y <- 1 until height) {
     disqualified += field(0, y)
     disqualified += field(width - 1, y)
   }
