@@ -25,7 +25,6 @@ def part1 = {
     if (radius == 0) {
       List((x, y))
     } else {
-      var c = (radius, 0)
       val half = (0 to radius).map { n => (radius - n, n) } ++ (1 until radius).map { n => (radius - n, -n) }
       (half ++ half.map { c => (-c._1, -c._2) }).map { c => (c._1 + x, c._2 + y) }
     }
