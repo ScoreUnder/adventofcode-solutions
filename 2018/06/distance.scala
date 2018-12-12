@@ -1,5 +1,3 @@
-import scala.util.control.Breaks._
-
 val coords = scala.io.Source.fromFile("input").getLines.map(_.split(",").map(_.trim)).collect {
   case Array(x, y) => (x.toInt, y.toInt)
 }.toVector
@@ -58,12 +56,10 @@ def part1 = {
     }
   }
 
-  breakable {
-    for (radius <- 0 until width+height) {
-      val changes = extendDistance(radius)
-      if (!changes) { break }
-      claimDistance(radius)
-    }
+  Stream.from(0) find { radius =>
+    val changes = extendDistance(radius)
+    claimDistance(radius)
+    !changes
   }
 
   val disqualified = new collection.mutable.HashSet[Int]
