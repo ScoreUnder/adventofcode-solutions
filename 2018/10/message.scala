@@ -47,9 +47,10 @@ def drawPointCloud(ps: Seq[Point]) = {
   println()
 }
 
-for (time <- (0 to 100000).view;
-     snapshot = simulate(time);
-     if seemsLegit(snapshot)) {
-  println(s"Found candidate at time $time")
-  drawPointCloud(snapshot)
+for (time <- (0 to 100000).par) {
+  val snapshot = simulate(time)
+  if (seemsLegit(snapshot)) {
+    println(s"Found candidate at time $time")
+    drawPointCloud(snapshot)
+  }
 }
