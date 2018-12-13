@@ -2,13 +2,10 @@ val INITIAL_STATE_REGEX = "initial state: ([.#]+)".r
 val RULE_REGEX = "([.#]{5}) => ([.#])".r
 
 val (initialState, rules) = {
-  val instructions = scala.io.Source.fromFile("input").getLines.collect {
-    case INITIAL_STATE_REGEX(state) => Left(state.toVector)
-    case RULE_REGEX(left, right) => Right(left.toVector -> right.ensuring(_.size == 1).head)
-  }.toVector
+  val instructions = scala.io.Source.fromFile("input").getLines.toVector
 
-  (instructions.collect { case Left(x) => x }.ensuring(_.size == 1).head,
-   instructions.collect { case Right(x) => x }.toMap[Seq[Char],Char] withDefaultValue '.')
+  (instructions.collect { case INITIAL_STATE_REGEX(state) => state.toVector }.ensuring(_.size == 1).head,
+   instructions.collect { case RULE_REGEX(left, right) => left.toVector -> right.ensuring(_.size == 1).head }.toMap[Seq[Char],Char] withDefaultValue '.')
 }
 
 implicit class RichVector[T](val me: Vector[T]) {
