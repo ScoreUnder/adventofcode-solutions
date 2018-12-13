@@ -74,14 +74,8 @@ def cartSim(removeCollisions: Boolean) = Stream.iterate(Vector(initialCarts)) { 
   subticks.toVector
 }.flatten
 
-def part1 = {
-  val Some(collisionState) = cartSim(removeCollisions = false).map(_.map(_.position)).find { findCollisions(_).nonEmpty }
-  findCollisions(collisionState).head
-}
-
-def part2 = {
-  cartSim(removeCollisions = true).filter { _.size == 1 }.apply(1)(0).position
-}
+def part1 = cartSim(removeCollisions = false).map(c => findCollisions(c.map(_.position))).filter(_.nonEmpty)(0)(0)
+def part2 = cartSim(removeCollisions = true).filter { _.size == 1 }(1)(0).position
 
 println(part1)
 println(part2)
