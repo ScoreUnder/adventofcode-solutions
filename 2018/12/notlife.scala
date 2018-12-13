@@ -11,26 +11,20 @@ val (initialState, rules) = {
    instructions.collect { case Right(x) => x }.toMap[Seq[Char],Char] withDefaultValue '.')
 }
 
-val PADDING = Vector.fill(4)('.')  // 2 to allow growth up to 2 tiles left/right, plus 2 to pad out the sliding window
-case class SimState(offset: Int, plants: Seq[Char]) {
-  def padded =
-    (plants take PADDING.size, plants takeRight PADDING.size) match {
-      case (PADDING, PADDING) => this
-      case (_, PADDING) => copy(offset = offset + PADDING.size, plants = PADDING ++ plants)
-      case (PADDING, _) => copy(plants = plants ++ PADDING)
-      case (_, _) => copy(offset = offset + PADDING.size, plants = PADDING ++ plants ++ PADDING)
-    }
-}
-
 implicit class RichVector[T](val me: Vector[T]) {
   def dropRightWhile(f: T => Boolean): Vector[T] = me take (me.lastIndexWhere(!f(_)) + 1)
 }
 
-val simStream = Stream.iterate(SimState(offset = 0, plants = initialState)) { state =>
+val PADDING = Vector.fill(4)('.')  // 2 to allow growth up to 2 tiles left/right, plus 2 to pad out the sliding window
+case class SimState(offset: Int, plants: Vector[Char]) {
+  def padded = copy(offset = offset + PADDING.size, plants = PADDING ++ plants ++ PADDING)
+  def trimmed = copy(offset = offset - plants.indexOf('#'), plants = plants.dropWhile(_ == '.').dropRightWhile(_ == '.'))
+}
+
+val simStream = Stream.iterate(SimState(offset = 0, plants = initialState).trimmed) { state =>
   val newState = state.padded
-  val newPlants = newState.plants.sliding(5).map(rules(_)).toVector.dropRightWhile(_ == '.')
-  val trimmedPlants = newPlants.dropWhile(_ == '.')
-  newState.copy(offset = newState.offset - 2 - (newPlants.size - trimmedPlants.size), plants = trimmedPlants)
+  val newPlants = newState.plants.sliding(5).map(rules(_)).toVector
+  newState.copy(offset = newState.offset - 2, plants = newPlants).trimmed
 }
 
 def printState(state: SimState) = {
