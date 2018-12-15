@@ -17,11 +17,28 @@ def step() = {
   recipeScore
 }
 
-def nextTen(after: Int) = {
-  while (recipes.size < after + 10) {
-    step()
+def infiniteRecipes = new Iterator[Int] {
+  var i = 0
+  override def next = {
+    while (i >= recipes.size) {
+      step()
+    }
+    i += 1
+    recipes(i - 1)
   }
-  recipes drop after take 10
+  override def hasNext = true
 }
 
-println(nextTen(702831).mkString)
+def nextTen(after: Int) = infiniteRecipes drop after take 10
+
+def recipesIndex(compare: Seq[Int]) =
+  infiniteRecipes.sliding(compare.size).zipWithIndex.collect {
+    case (lst, ind) if lst == compare => ind
+  }.next
+
+val input = 702831
+def part1 = nextTen(input).mkString
+def part2 = recipesIndex(numToDigits(input))
+
+println(part1)
+println(part2)
