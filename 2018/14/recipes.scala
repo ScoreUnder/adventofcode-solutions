@@ -1,6 +1,7 @@
 import scala.annotation._
 
 val recipes = collection.mutable.ArrayBuffer[Int](3, 7)
+recipes.sizeHint(30000000)
 var elves = Vector(0, 1)
 
 @tailrec
