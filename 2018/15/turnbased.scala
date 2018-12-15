@@ -71,7 +71,7 @@ def aStarPathTo(aStarDistances: Map[Vec2, Int], pos: Vec2, acc: List[Vec2] = Nil
   }
 }
 
-val (field, intialEntities) = {
+val (field, initialEntities) = {
   val (field, entitiesMaybe) = scala.io.Source.fromFile("input").getLines.zipWithIndex.map { case (row, y) =>
     row.zipWithIndex.map {
       case ('E', x) => ('.', Some(Troop(Vec2(x, y), ELF)))
@@ -83,7 +83,7 @@ val (field, intialEntities) = {
   (new Field(field), entitiesMaybe.flatten.flatten)
 }
 
-val entitiesSimulation = Stream.iterate(intialEntities) { entities =>
+def entitiesSimulation(initialEntities: Seq[Troop]) = Stream.iterate(initialEntities) { entities =>
   val newEntities = entities.sortBy { e => e.pos }.toBuffer
   // This is all imperative, oh well
   var i = 0
@@ -129,7 +129,6 @@ val entitiesSimulation = Stream.iterate(intialEntities) { entities =>
     i += 1
   }
 
-
   newEntities.toVector
 }
 
@@ -147,7 +146,30 @@ def printSim(field: Field, entities: Seq[Troop]) = {
   }
 }
 
-def finalTurn = entitiesSimulation.indexWhere(en => en.map(_.team).toSet.size != 2)
+def score(entities: Seq[Seq[Troop]], turn: Int) =
+  entities(turn).map(_.hp).sum * (turn - 1)
 
-def part1 = entitiesSimulation(finalTurn).map(_.hp).sum * (finalTurn - 1)
+def part1 = {
+  val sim = entitiesSimulation(initialEntities)
+  val finalTurn = sim.indexWhere(en => en.map(_.team).toSet.size != 2)
+  score(sim, finalTurn)
+}
+
+def part2 = {
+  val initialElves = initialEntities.count(_.team == ELF)
+  (for (atk <- Iterator from 4) yield {
+    val sim = entitiesSimulation(initialEntities.map {
+        case e @ Troop(_, ELF, _, _) => e.copy(atk = atk)
+        case g => g
+      })
+
+    val finalTurn = sim.indexWhere(en => en.map(_.team).toSet.size != 2 || en.count(_.team == ELF) != initialElves)
+    if (sim(finalTurn).count(_.team == ELF) == initialElves) {
+      Some(score(sim, finalTurn))
+    }
+    else None
+  }).flatten.next
+}
+
 println(part1)
+println(part2)
