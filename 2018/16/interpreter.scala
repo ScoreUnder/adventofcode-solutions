@@ -5,7 +5,7 @@ type Regs = Vector[Int]
 type Opcode = Vector[Int]
 
 case class MyOp(code: Int)
-case class TestCase(inRegs: Regs, outRegs: Regs, opcode: Vector[Int])
+case class TestCase(inRegs: Regs, outRegs: Regs, opcode: Opcode)
 
 def operation(regs: Regs, op: MyOp, opcode: Opcode): Regs = {
   val Seq(_, a, b, c) = opcode
