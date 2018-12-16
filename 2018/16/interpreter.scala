@@ -2,11 +2,13 @@ val TESTCASE_REGEX = """^(\w+):\s+\[([^]]*)\]$""".r
 val OPCODE_REGEX = """^(\d+(?:\s+\d+){3})$""".r
 
 type Regs = Vector[Int]
+type Opcode = Vector[Int]
 
 case class MyOp(code: Int)
 case class TestCase(inRegs: Regs, outRegs: Regs, opcode: Vector[Int])
 
-def operation(regs: Regs, op: MyOp, a: Int, b: Int, c: Int): Regs =
+def operation(regs: Regs, op: MyOp, opcode: Opcode): Regs = {
+  val Seq(_, a, b, c) = opcode
   regs.updated(c, op.code match {
     case 0 => regs(a) + regs(b)
     case 1 => regs(a) + b
@@ -31,6 +33,7 @@ def operation(regs: Regs, op: MyOp, a: Int, b: Int, c: Int): Regs =
     case 14 => if (regs(a) == b) 1 else 0
     case 15 => if (regs(a) == regs(b)) 1 else 0
   })
+}
 val allOps = 0 to 15 map {MyOp(_)}
 
 val (testcases, instructions) = {
@@ -54,7 +57,7 @@ val (testcases, instructions) = {
 }
 
 def matchingOps(tc: TestCase) = allOps.filter { op =>
-    operation(tc.inRegs, op, tc.opcode(1), tc.opcode(2), tc.opcode(3)) == tc.outRegs
+    operation(tc.inRegs, op, tc.opcode) == tc.outRegs
   }
 
 def part1 = testcases.filter { t => matchingOps(t).size >= 3 }.size
