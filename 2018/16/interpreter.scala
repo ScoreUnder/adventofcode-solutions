@@ -60,6 +60,31 @@ def matchingOps(tc: TestCase) = allOps.filter { op =>
     operation(tc.inRegs, op, tc.opcode) == tc.outRegs
   }
 
+@scala.annotation.tailrec
+def removeKnownSolutions[T](curr: Map[T, Set[MyOp]], last: Map[T, Set[MyOp]] = Map.empty[T, Nothing]): Map[T, Set[MyOp]] = {
+  if (curr == last) curr
+  else {
+    val singles = curr.values.filter(_.size == 1).reduce((a, b) => a | b)
+    removeKnownSolutions(curr.mapValues { v =>
+      if (v.size == 1) v
+      else v &~ singles
+    }, curr)
+  }
+}
+
+def determineOps(tcs: Seq[TestCase]) = {
+  val byOpcode = tcs.groupBy(_.opcode(0))
+  val opcodeMeanings = removeKnownSolutions(byOpcode.mapValues(_.foldLeft(allOps.toSet)((acc, tc) => acc & matchingOps(tc).toSet)))
+  assert(opcodeMeanings.values.forall(_.size == 1))
+  opcodeMeanings.mapValues(_.head)
+}
+
 def part1 = testcases.filter { t => matchingOps(t).size >= 3 }.size
+def part2 = {
+  val realOps = determineOps(testcases)
+  val finalRegs = instructions.foldLeft(Vector(0, 0, 0, 0)) { (regs, op) => operation(regs, realOps(op(0)), op) }
+  finalRegs(0)
+}
 
 println(part1)
+println(part2)
