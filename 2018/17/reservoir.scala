@@ -108,5 +108,7 @@ allTicks()
 println(field.map(_.mkString).mkString("\n"))
 
 def part1 = field.view.flatten.count(chrIsWater)
+def part2 = field.view.flatten.count(_ == '~')
 
 println(part1)
+println(part2)
