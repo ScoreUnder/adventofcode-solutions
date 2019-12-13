@@ -32,15 +32,6 @@ val wiresExtended = {
   }
 }
 
-val closestCross = {
-  val wirePositions = wiresExtended.map { _.drop(1).map(_ dropRight 1).toSet }
-  wirePositions.flatten.groupBy(identity).collect {
-    case (pos, xs) if xs.length > 1 => pos
-  }.toVector.sortBy(_.manhattan).headOption
-}
-
-println(s"$closestCross ${closestCross.map(_.manhattan)}")
-
 def excludeSelfCrossovers(positions: Seq[Wire]) =
   positions.map { wire =>
     wire.drop(1).foldLeft((List.empty[WirePos], Set.empty[WirePos])) { (acc, pos) =>
@@ -53,11 +44,27 @@ def excludeSelfCrossovers(positions: Seq[Wire]) =
     }._1
   }
 
-val closestCrossByWire =
-  excludeSelfCrossovers(wiresExtended).flatten.groupBy(_ dropRight 1).collect {
-    case (rawPos, positions) if positions.length > 1 =>
-      positions.map(_.last)  // get wire distance
-        .sorted.take(2).sum  // take sum of least 2
-  }.minOption
+def part1() = {
+  val closestCross = {
+    val wirePositions = wiresExtended.map { _.drop(1).map(_ dropRight 1).toSet }
+    wirePositions.flatten.groupBy(identity).collect {
+      case (pos, xs) if xs.length > 1 => pos
+    }.toVector.sortBy(_.manhattan).headOption
+  }
 
-println(closestCrossByWire)
+  println(s"$closestCross ${closestCross.map(_.manhattan)}")
+}
+
+def part2() = {
+  val closestCrossByWire =
+    excludeSelfCrossovers(wiresExtended).flatten.groupBy(_ dropRight 1).collect {
+      case (rawPos, positions) if positions.length > 1 =>
+        positions.map(_.last)  // get wire distance
+          .sorted.take(2).sum  // take sum of least 2
+    }.minOption
+
+  println(closestCrossByWire)
+}
+
+part1()
+part2()
