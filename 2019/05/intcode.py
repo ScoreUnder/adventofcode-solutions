@@ -1,31 +1,44 @@
 #!/usr/bin/env python3
-def execute(program, pc):
-    opcode = program[pc]
-    pc += 1
-    if opcode == 1:
-        src1, src2, dst = program[pc:pc+3]
-        pc += 3
-        program[dst] = program[src1] + program[src2]
-    elif opcode == 2:
-        src1, src2, dst = program[pc:pc+3]
-        pc += 3
-        program[dst] = program[src1] * program[src2]
-    elif opcode == 99:
-        return None
-    else:
-        raise Exception(f"Bad opcode {opcode}")
-    return pc
+class IntcodeInterpreter:
+    def __init__(self, program):
+        assert(all(isinstance(elem, int) for elem in program))
+        self.program = program[:]
+        self.pc = 0
+
+    def consume(self, count):
+        vals = self.program[self.pc:self.pc + count]
+        self.pc += count
+        return vals
+
+    def consumePtrs(self, count):
+        return [self.program[addr] for addr in self.consume(count)]
+
+    def writePtr(self, val):
+        self.program[self.consume(1)[0]] = val
+
+    def step(self):
+        opcode = self.consume(1)[0]
+        if opcode == 1:
+            self.writePtr(sum(self.consumePtrs(2)))
+        elif opcode == 2:
+            val1, val2 = self.consumePtrs(2)
+            self.writePtr(val1 * val2)
+        elif opcode == 99:
+            self.pc = None
+        else:
+            raise Exception(f"Bad opcode {opcode}")
+
+    def run(self):
+        while self.pc is not None:
+            self.step()
 
 
 def execute_loop(program, args):
-    program = program[:]
-    program[1:3] = args
+    interp = IntcodeInterpreter(program)
+    interp.program[1:3] = args
+    interp.run()
 
-    pc = 0  # Program Counter
-    while pc is not None:
-        pc = execute(program, pc)
-
-    return program[0]
+    return interp.program[0]
 
 
 def main():
