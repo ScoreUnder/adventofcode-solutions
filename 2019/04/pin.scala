@@ -43,3 +43,14 @@ val candidates =
     .toSet
 
 println(candidates.size)
+
+val part2Candidates = candidates
+  .view
+  .filter { n =>
+    (-1 +: n.digits :+ -1)
+      .sliding(4)
+      .exists { case Seq(a, b, c, d) => a != b && b == c && c != d }
+  }
+  .toSet
+
+println(part2Candidates.size)
