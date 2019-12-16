@@ -1,9 +1,13 @@
 #!/usr/bin/env scala
+import collection.mutable
 import Integral.Implicits._
+import scala.util.chaining._
 
 class IntcodeInterpreter(origProgram: Seq[Int]) {
   var pc = 0
   var program = origProgram.toBuffer
+  val input = mutable.Queue.empty[Int]
+  val output = mutable.Queue.empty[Int]
 
   sealed trait Opcode {
     def run(modes: Int): Unit
@@ -18,8 +22,8 @@ class IntcodeInterpreter(origProgram: Seq[Int]) {
   val opcodes = Map[Int, Opcode](
     1 -> WritebackOpcode(2, _.sum),
     2 -> WritebackOpcode(2, _.product),
-    3 -> WritebackOpcode(0, { _ => io.StdIn.readLine("Need input: ").toInt}),
-    4 -> UnitOpcode(1, println),
+    3 -> WritebackOpcode(0, { _ => input.dequeue() }),
+    4 -> UnitOpcode(1, { v => output ++= v }),
     5 -> UnitOpcode(2, { p => if (p(0) != 0) pc = p(1) }),
     6 -> UnitOpcode(2, { p => if (p(0) == 0) pc = p(1) }),
     7 -> WritebackOpcode(2, { p => if (p(0) < p(1)) 1 else 0 }),
@@ -55,7 +59,15 @@ class IntcodeInterpreter(origProgram: Seq[Int]) {
 def main(): Unit = {
   val program = io.Source.fromFile("input").getLines
     .flatMap(_.split(",")).map(_.toInt).toSeq
-  new IntcodeInterpreter(program).run()
+  val inputs = (0 to 4).permutations
+  val results = for (input <- inputs)
+    yield input -> input.foldLeft(0) { (acc, inp) =>
+      new IntcodeInterpreter(program).tap { interp =>
+        interp.input ++= inp :: acc :: Nil
+        interp.run()
+      }.output.dequeue()
+    }
+  println(results.maxBy(_._2))
 }
 
 main()
