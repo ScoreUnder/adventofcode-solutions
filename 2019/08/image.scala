@@ -12,6 +12,11 @@ def part1 = {
 }
 
 def part2 = {
+  // layers-of-rows-of-pixels
+  // →transpose→ rows-of-layers-of-pixels
+  // →map(transpose)→ rows-of-pixels-of-layers
+  // with layers accessible per-pixel, transparency is pretty easy:
+  // just find the first non-transparent pixel-layer.
   val layersMerged = image.transpose.map(_.transpose.map(_.find(_ != '2').getOrElse('0')))
   layersMerged.map(_.map {
     case '1' => '#'
