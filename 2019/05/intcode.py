@@ -28,6 +28,20 @@ class IntcodeInterpreter:
             self.writePtr(int(input("Need input: ")))
         elif opcode == 4:
             print(self.consumePtrs(1, modes))
+        elif opcode == 5:
+            cond, target = self.consumePtrs(2, modes)
+            if cond != 0:
+                self.pc = target
+        elif opcode == 6:
+            cond, target = self.consumePtrs(2, modes)
+            if cond == 0:
+                self.pc = target
+        elif opcode == 7:
+            a, b = self.consumePtrs(2, modes)
+            self.writePtr(int(a < b))
+        elif opcode == 8:
+            a, b = self.consumePtrs(2, modes)
+            self.writePtr(int(a == b))
         elif opcode == 99:
             self.pc = None
         else:
