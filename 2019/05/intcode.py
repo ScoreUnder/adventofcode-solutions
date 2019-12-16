@@ -23,6 +23,10 @@ class IntcodeInterpreter:
         elif opcode == 2:
             val1, val2 = self.consumePtrs(2)
             self.writePtr(val1 * val2)
+        elif opcode == 3:
+            self.writePtr(int(input("Need input: ")))
+        elif opcode == 4:
+            print(self.consumePtrs(1))
         elif opcode == 99:
             self.pc = None
         else:
