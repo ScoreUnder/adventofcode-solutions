@@ -10,23 +10,24 @@ class IntcodeInterpreter:
         self.pc += count
         return vals
 
-    def consumePtrs(self, count):
-        return [self.program[addr] for addr in self.consume(count)]
+    def consumePtrs(self, count, modes):
+        return [addr if modes // 10**ind % 10 == 1 else self.program[addr]
+                for ind, addr in enumerate(self.consume(count))]
 
     def writePtr(self, val):
         self.program[self.consume(1)[0]] = val
 
     def step(self):
-        opcode = self.consume(1)[0]
+        modes, opcode = divmod(self.consume(1)[0], 100)
         if opcode == 1:
-            self.writePtr(sum(self.consumePtrs(2)))
+            self.writePtr(sum(self.consumePtrs(2, modes)))
         elif opcode == 2:
-            val1, val2 = self.consumePtrs(2)
+            val1, val2 = self.consumePtrs(2, modes)
             self.writePtr(val1 * val2)
         elif opcode == 3:
             self.writePtr(int(input("Need input: ")))
         elif opcode == 4:
-            print(self.consumePtrs(1))
+            print(self.consumePtrs(1, modes))
         elif opcode == 99:
             self.pc = None
         else:
