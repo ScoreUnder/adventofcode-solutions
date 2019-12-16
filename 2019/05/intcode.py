@@ -38,27 +38,10 @@ class IntcodeInterpreter:
             self.step()
 
 
-def execute_loop(program, args):
-    interp = IntcodeInterpreter(program)
-    interp.program[1:3] = args
-    interp.run()
-
-    return interp.program[0]
-
-
 def main():
     program = open("input").read().replace('\n', '').split(',')
     program = [int(x) for x in program]
-
-    result = execute_loop(program, [12, 2])
-    print(result)
-
-    for noun in range(0, len(program)):
-        for verb in range(0, len(program)):
-            result = execute_loop(program, [noun, verb])
-            if result == 19690720:
-                print(noun * 100 + verb)
-                break
+    IntcodeInterpreter(program).run()
 
 
 main()
