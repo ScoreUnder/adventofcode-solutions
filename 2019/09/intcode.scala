@@ -86,11 +86,7 @@ def main(): Unit = {
   val program = io.Source.fromFile("input").getLines
     .flatMap(_.split(",")).map(ProgInt(_)).toSeq
 
-  def part1 = {
-    new IntcodeInterpreter(program).run()
-  }
-
-  println(part1)
+  new IntcodeInterpreter(program).run()
 }
 
 main()
