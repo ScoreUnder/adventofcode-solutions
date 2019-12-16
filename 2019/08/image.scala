@@ -11,4 +11,13 @@ def part1 = {
   leastZeros.count(_ == '1') * leastZeros.count(_ == '2')
 }
 
+def part2 = {
+  val layersMerged = image.transpose.map(_.transpose.map(_.find(_ != '2').getOrElse('0')))
+  layersMerged.map(_.map {
+    case '1' => '#'
+    case '0' => ' '
+  }.mkString).mkString("\n")
+}
+
 println(part1)
+println(part2)
