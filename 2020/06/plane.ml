@@ -20,7 +20,7 @@ let questions =
         assert false
     with End_of_file ->
         close_in fh;
-        List.rev !lines
+        !lines
 
 let sum = List.fold_left (+) 0
 let reduce f (x :: xs) = List.fold_left f x xs
