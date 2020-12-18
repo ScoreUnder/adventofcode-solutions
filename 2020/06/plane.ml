@@ -18,18 +18,12 @@ let questions =
            ngroup :: rest)
        [ [] ]
 
-let sum = List.fold_left ( + ) 0
-
-let reduce f = function
-  | x :: xs -> List.fold_left f x xs
-  | [] -> raise (Invalid_argument "empty list passed to reduce")
-
 let sum_assenting_values joiner =
   questions
   |> List.map (fun group ->
-         group |> List.map charset_of_string |> reduce joiner
+         group |> List.map charset_of_string |> List.reduce joiner
          |> CharSet.cardinal)
-  |> sum
+  |> List.sum
 
 let part1 = sum_assenting_values CharSet.union
 
