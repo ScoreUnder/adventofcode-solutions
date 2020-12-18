@@ -1,0 +1,4 @@
+(executable
+ (name plane)
+ (libraries batteries)
+ (modes byte exe))

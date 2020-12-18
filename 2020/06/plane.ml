@@ -1,3 +1,5 @@
+open Batteries
+
 module CharSet = Set.Make(Char)
 
 let charset_of_string s =
@@ -6,24 +8,16 @@ let charset_of_string s =
     aux (String.length s - 1) CharSet.empty
 
 let questions =
-    let fh = open_in "input" in
-    let lines = ref [[]] in
-    try
-        while true do
-            let line = input_line fh in
-            if line = "" then
-                lines := [] :: !lines
-            else
-                let h :: t = !lines in
-                lines := (line :: h) :: t
-        done;
-        assert false
-    with End_of_file ->
-        close_in fh;
-        !lines
+    File.lines_of "input"
+    |> Enum.fold (fun lines v ->
+                    if v = ""
+                    then [] :: lines
+                    else (v :: List.hd lines) :: List.tl lines) [[]]
 
 let sum = List.fold_left (+) 0
-let reduce f (x :: xs) = List.fold_left f x xs
+let reduce f = function
+  | x :: xs -> List.fold_left f x xs
+  | [] -> raise (Invalid_argument "empty list passed to reduce")
 
 let sum_assenting_values joiner =
     questions

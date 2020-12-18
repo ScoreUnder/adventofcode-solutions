@@ -1,3 +1,6 @@
 *.o
 *.cm[iox]
 a.out
+.merlin
+_build
+.idea
