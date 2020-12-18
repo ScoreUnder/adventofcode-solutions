@@ -12,7 +12,11 @@ let questions =
     |> Enum.fold (fun lines v ->
                     if v = ""
                     then [] :: lines
-                    else (v :: List.hd lines) :: List.tl lines) [[]]
+                    else
+                      let [@warning "-8"] group :: rest = lines in
+                      let ngroup = v :: group in
+                        ngroup :: rest)
+      [[]]
 
 let sum = List.fold_left (+) 0
 let reduce f = function
