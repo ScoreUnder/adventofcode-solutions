@@ -1,11 +1,7 @@
 open Batteries
 module CharSet = Set.Make (Char)
 
-let charset_of_string s =
-  let rec aux i set =
-    if i < 0 then set else aux (i - 1) (CharSet.add s.[i] set)
-  in
-  aux (String.length s - 1) CharSet.empty
+let charset_of_string s = String.fold_right CharSet.add s CharSet.empty
 
 let questions =
   File.lines_of "input"
