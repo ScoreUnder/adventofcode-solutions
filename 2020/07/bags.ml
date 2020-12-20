@@ -19,21 +19,20 @@ let bag_defs =
            |> List.map bags_sub_groups
          in
          (parent, children))
-  |> List.of_enum
+  |> StringMap.of_enum
 
 let stringmap_add_to_list k v map =
   StringMap.add k (v :: StringMap.find_default [] k map) map
 
 let bag_immediate_parents =
-  bag_defs
-  |> List.fold_left
-       (fun acc (parent, children) ->
-         children
-         |> List.fold_left
-              (fun acc (_, child_name) ->
-                stringmap_add_to_list child_name parent acc)
-              acc)
-       StringMap.empty
+  StringMap.fold
+    (fun parent children acc ->
+      children
+      |> List.fold_left
+           (fun acc (_, child_name) ->
+             stringmap_add_to_list child_name parent acc)
+           acc)
+    bag_defs StringMap.empty
 
 let count_potential_parents key =
   let rec aux keys visited =
@@ -49,7 +48,18 @@ let count_potential_parents key =
   in
   StringSet.cardinal (aux [ key ] StringSet.empty) - 1
 
+let rec count_children key =
+  StringMap.find_default [] key bag_defs
+  |> List.fold_left
+       (fun acc (child_mul, child_name) ->
+         acc + (child_mul * (1 + count_children child_name)))
+       0
+
 let part1 which =
   printf "%s has %d parents\n" which (count_potential_parents which)
 
+let part2 which = printf "%s has %d children\n" which (count_children which)
+
 let () = part1 "shiny gold"
+
+let () = part2 "shiny gold"
