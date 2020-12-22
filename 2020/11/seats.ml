@@ -2,47 +2,42 @@ open Batteries
 open Printf
 
 module Field2D = struct
-  type 'a t = { v : 'a array array } [@@unboxed]
+  type 'a t = { v : 'a array; w : int; h : int }
 
-  let width (fld : 'a t) = fld.v.(0) |> Array.length
+  let width (fld : 'a t) = fld.w
 
-  let height (fld : 'a t) = Array.length fld.v
+  let height (fld : 'a t) = fld.h
 
   let make e : 'a t =
-    let res = { v = e |> map Array.of_enum |> Array.of_enum } in
-    let w = width res in
-    assert (Array.for_all (fun el -> Array.length el = w) res.v);
+    let data = e |> map Array.of_enum |> List.of_enum in
+    let res = { v = Array.concat data; w = Array.length (List.hd data); h = List.length data } in
+    assert (List.for_all (fun el -> Array.length el = res.w) data);
+    assert (Array.length res.v = res.w * res.h);
     res
 
-  let get (fld : 'a t) x y = fld.v.(y).(x)
+  let get (fld : 'a t) x y = fld.v.(y * fld.w + x)
 
   let get3x3 (fld : 'a t) x y =
     let ys = max 0 (y - 1) -- min (height fld - 1) (y + 1) in
     let xs = max 0 (x - 1) -- min (width fld - 1) (x + 1) in
     ys
     |> Enum.concat_map (fun y ->
-           let row = fld.v.(y) in
-           xs |> Enum.clone |> map (Array.get row))
+           let row = fld.w * y in
+           xs |> Enum.clone |> map (fun x -> fld.v.(row + x)))
 
   let mapi f (fld : 'a t) : 'b t =
     {
-      v =
-        fld.v
-        |> Array.mapi (fun y row -> row |> Array.mapi (fun x el -> f x y el));
+      v = fld.v |> Array.mapi (fun c el -> let x = c mod fld.w and y = c / fld.w in f x y el);
+      w = fld.w;
+      h = fld.h
     }
 
   let iteri f (fld : 'a t) =
     fld.v
-    |> Array.iteri (fun y row -> row |> Array.iteri (fun x el -> f x y el))
+    |> Array.iteri (fun c el -> let x = c mod fld.w and y = c / fld.w in f x y el)
 
-  let show (fld : char t) =
-    String.concat "\n"
-      (fld.v |> Array.map (Array.enum %> String.of_enum) |> Array.to_list)
-
-  let count_if f (fld : 'a t) =
-    fld.v |> Array.enum
-    |> map (Array.enum %> filter f %> Enum.hard_count)
-    |> Enum.sum
+  let count_if (f: 'a -> bool) (fld : 'a t) =
+    fld.v |> Array.count_matching f
 
   let find_mapi (type r) (f : int -> int -> 'a -> r option) (fld : 'a t) : r =
     let exception StopWithValue of r in
