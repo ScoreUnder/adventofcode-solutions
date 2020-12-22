@@ -2,39 +2,58 @@ open Batteries
 open Printf
 
 module Field2D = struct
-  type 'a t = 'a Vect.t Vect.t
+  type 'a t = { v : 'a array array } [@@unboxed]
 
-  let width (fld : 'a t) = Vect.get fld 0 |> Vect.length
+  let width (fld : 'a t) = fld.v.(0) |> Array.length
 
-  let height (fld : 'a t) = Vect.length fld
+  let height (fld : 'a t) = Array.length fld.v
 
   let make e : 'a t =
-    let res = e |> map Vect.of_enum |> Vect.of_enum in
+    let res = { v = e |> map Array.of_enum |> Array.of_enum } in
     let w = width res in
-    assert (Vect.for_all (fun el -> Vect.length el = w) res);
+    assert (Array.for_all (fun el -> Array.length el = w) res.v);
     res
 
-  let get (fld : 'a t) x y = Vect.get (Vect.get fld y) x
+  let get (fld : 'a t) x y = fld.v.(y).(x)
 
   let get3x3 (fld : 'a t) x y =
-    let ys = max 0 (y - 1) -- min (Vect.length fld - 1) (y + 1) in
-    let xs = max 0 (x - 1) -- min (Vect.length (Vect.get fld 0) - 1) (x + 1) in
+    let ys = max 0 (y - 1) -- min (height fld - 1) (y + 1) in
+    let xs = max 0 (x - 1) -- min (width fld - 1) (x + 1) in
     ys
     |> Enum.concat_map (fun y ->
-           let row = Vect.get fld y in
-           xs |> Enum.clone |> map (Vect.get row))
+           let row = fld.v.(y) in
+           xs |> Enum.clone |> map (Array.get row))
 
-  let mapi f (fld : 'a t) : 'a t =
-    fld |> Vect.mapi (fun y row -> row |> Vect.mapi (fun x el -> f x y el))
+  let mapi f (fld : 'a t) : 'b t =
+    {
+      v =
+        fld.v
+        |> Array.mapi (fun y row -> row |> Array.mapi (fun x el -> f x y el));
+    }
+
+  let iteri f (fld : 'a t) =
+    fld.v
+    |> Array.iteri (fun y row -> row |> Array.iteri (fun x el -> f x y el))
 
   let show (fld : char t) =
     String.concat "\n"
-      (fld |> Vect.map (Vect.enum %> String.of_enum) |> Vect.to_list)
+      (fld.v |> Array.map (Array.enum %> String.of_enum) |> Array.to_list)
 
   let count_if f (fld : 'a t) =
-    fld |> Vect.enum
-    |> map (Vect.enum %> filter f %> Enum.hard_count)
+    fld.v |> Array.enum
+    |> map (Array.enum %> filter f %> Enum.hard_count)
     |> Enum.sum
+
+  let find_mapi (type r) (f : int -> int -> 'a -> r option) (fld : 'a t) : r =
+    let exception StopWithValue of r in
+    try
+      fld
+      |> iteri (fun x y el ->
+             match f x y el with
+             | Some x -> raise (StopWithValue x)
+             | None -> ());
+      raise Not_found
+    with StopWithValue x -> x
 end
 
 let initial = File.lines_of "input" |> map String.enum |> Field2D.make
