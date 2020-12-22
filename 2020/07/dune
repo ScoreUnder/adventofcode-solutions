@@ -1,5 +1,4 @@
 (executable
  (name bags)
  (libraries batteries re)
- (preprocess (pps ppx_tyre))
  (modes byte exe))
