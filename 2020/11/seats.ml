@@ -89,17 +89,17 @@ let cast_all_rays fld =
     if x < 0 || y < 0 || x >= width || y >= height then (-1, -1)
     else
       match Field2D.get fld x y with
-      | '.' -> cast_ray (x + dy, y + dy) (dx, dy)
+      | '.' -> cast_ray (x + dx, y + dy) (dx, dy)
       | _ -> (x, y)
   in
   fld
   |> Field2D.mapi (fun x y _ ->
          rays |> List.enum
-         |> map (fun (dx, dy) -> cast_ray (x + dx, y + dy) (x, y))
+         |> map (fun (dx, dy) -> cast_ray (x + dx, y + dy) (dx, dy))
          |> Array.of_enum)
 
 let preprocess_rays fld =
-  let no_oob = function -1, -1 -> false | x -> true in
+  let no_oob = function -1, -1 -> false | _ -> true in
   fld |> cast_all_rays |> Field2D.map (Array.filter no_oob)
 
 let count_when_stable f =
@@ -120,5 +120,5 @@ let part2 () =
          |> map (fun (x, y) -> Field2D.get f x y)))
 
 let () =
-  printf "Part 1: %d occupied seats\n%!" (part1 ())(*;
-  printf "Part 2: %d occupied seats\n%!" (part2 ())*)
+  printf "Part 1: %d occupied seats\n%!" (part1 ());
+  printf "Part 2: %d occupied seats\n%!" (part2 ())
