@@ -19,13 +19,40 @@ let map_pairs f e =
       make_enum (ref x) e
   | None -> Enum.empty ()
 
+let adapters_ex = adapters |> Set.add 0 |> Set.add (Set.max_elt adapters + 3)
+
 let part1 () =
-  let diffs =
-    adapters |> Set.add 0
-    |> Set.add (Set.max_elt adapters + 3)
-    |> Set.enum |> map_pairs ( - ) |> List.of_backwards
-  in
+  let diffs = adapters_ex |> Set.enum |> map_pairs ( - ) |> List.of_backwards in
   List.count_matching (( = ) (-1)) diffs
   * List.count_matching (( = ) (-3)) diffs
 
-let () = printf "Part 1: %d\n%!" (part1 ())
+let memoize f =
+  let tbl = Hashtbl.create (Set.cardinal adapters_ex) in
+  fun v ->
+    match Hashtbl.find_option tbl v with
+    | Some res -> res
+    | None ->
+        let res = f v in
+        Hashtbl.add tbl v res;
+        res
+
+let memoize_rec f_norec =
+  let f = ref (fun _ -> assert false) in
+  let memoized = memoize (fun v -> f_norec !f v) in
+  f := memoized;
+  memoized
+
+let count_adapter_combinations lst =
+  let aux f lst =
+    match lst with
+    | [ a; b ] when b - a <= 3 -> 1
+    | a :: b :: tl when b - a <= 3 -> f (b :: tl) + f (a :: tl)
+    | _ -> 0
+  in
+  (memoize_rec aux) lst
+
+let part2 () = count_adapter_combinations (Set.to_list adapters_ex)
+
+let () =
+  printf "Part 1: %d\n%!" (part1 ());
+  printf "Part 2: %d\n%!" (part2 ())
