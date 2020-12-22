@@ -56,7 +56,10 @@ module Field2D = struct
   let show (fld : char t) =
     let rec aux arr acc =
       if Array.length arr = 0 then acc
-      else aux (Array.sub arr fld.w (Array.length arr - fld.w)) ((Array.sub arr 0 fld.w |> Array.enum |> String.of_enum) :: acc)
+      else
+        aux
+          (Array.sub arr fld.w (Array.length arr - fld.w))
+          ((Array.sub arr 0 fld.w |> Array.enum |> String.of_enum) :: acc)
     in
     String.concat "\n" (List.rev (aux fld.v []))
 end
@@ -105,7 +108,8 @@ let preprocess_rays fld =
 let count_when_stable f =
   let rec aux fld =
     let next = f fld in
-    print_endline (Field2D.show next); print_endline "";
+    print_endline (Field2D.show next);
+    print_endline "";
     if fld = next then next else aux next
   in
   aux initial |> Field2D.count_if (( = ) '#')
