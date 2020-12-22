@@ -25,4 +25,29 @@ let part1 () =
   let initial, remaining = nums |> List.split_at 25 in
   aux initial remaining
 
-let () = printf "Part 1: bad number is %d\n%!" (part1 ())
+let unzip e =
+  let open LazyList in
+  let l = e |> of_enum in
+  (map (fun (a, _) -> a) l, map (fun (_, b) -> b) l)
+
+let part2 part1_r =
+  let rec aux nums =
+    let open Enum in
+    let sums, vals =
+      nums |> List.enum
+      |> scanl (fun (a, _) b -> (a + b, b)) (0, 0)
+      |> skip 1
+      |> take_while (fun (s, _) -> s <= part1_r)
+      |> unzip
+    in
+    let open LazyList in
+    if length vals > 1 && last sums = part1_r then
+      (vals |> enum |> reduce min) + (vals |> enum |> reduce max)
+    else aux (List.tl nums)
+  in
+  aux nums
+
+let () =
+  let part1_r = part1 () in
+  printf "Part 1: bad number is %d\n%!" part1_r;
+  printf "Part 2: 'weakness' is %d\n%!" (part2 part1_r)
