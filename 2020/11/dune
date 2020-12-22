@@ -1,0 +1,4 @@
+(executable
+ (name seats)
+ (libraries batteries)
+ (modes byte exe))
