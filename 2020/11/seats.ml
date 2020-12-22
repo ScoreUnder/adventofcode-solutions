@@ -10,12 +10,18 @@ module Field2D = struct
 
   let make e : 'a t =
     let data = e |> map Array.of_enum |> List.of_enum in
-    let res = { v = Array.concat data; w = Array.length (List.hd data); h = List.length data } in
+    let res =
+      {
+        v = Array.concat data;
+        w = Array.length (List.hd data);
+        h = List.length data;
+      }
+    in
     assert (List.for_all (fun el -> Array.length el = res.w) data);
     assert (Array.length res.v = res.w * res.h);
     res
 
-  let get (fld : 'a t) x y = fld.v.(y * fld.w + x)
+  let get (fld : 'a t) x y = fld.v.((y * fld.w) + x)
 
   let get3x3 (fld : 'a t) x y =
     let ys = max 0 (y - 1) -- min (height fld - 1) (y + 1) in
@@ -27,17 +33,25 @@ module Field2D = struct
 
   let mapi f (fld : 'a t) : 'b t =
     {
-      v = fld.v |> Array.mapi (fun c el -> let x = c mod fld.w and y = c / fld.w in f x y el);
+      v =
+        fld.v
+        |> Array.mapi (fun c el ->
+               let x = c mod fld.w and y = c / fld.w in
+               f x y el);
       w = fld.w;
-      h = fld.h
+      h = fld.h;
     }
+
+  let map f (fld : 'a t) : 'b t =
+    { v = fld.v |> Array.map f; w = fld.w; h = fld.h }
 
   let iteri f (fld : 'a t) =
     fld.v
-    |> Array.iteri (fun c el -> let x = c mod fld.w and y = c / fld.w in f x y el)
+    |> Array.iteri (fun c el ->
+           let x = c mod fld.w and y = c / fld.w in
+           f x y el)
 
-  let count_if (f: 'a -> bool) (fld : 'a t) =
-    fld.v |> Array.count_matching f
+  let count_if (f : 'a -> bool) (fld : 'a t) = fld.v |> Array.count_matching f
 
   let find_mapi (type r) (f : int -> int -> 'a -> r option) (fld : 'a t) : r =
     let exception StopWithValue of r in
@@ -95,7 +109,7 @@ let guaranteed_dot_pos fld =
 let preprocess_rays fld =
   let dot_pos = guaranteed_dot_pos fld in
   let oob_to_dot = function -1, -1 -> dot_pos | x -> x in
-  fld |> cast_all_rays |> Field2D.mapi (fun _ _ -> Array.map oob_to_dot)
+  fld |> cast_all_rays |> Field2D.map (Array.map oob_to_dot)
 
 let count_when_stable f =
   let rec aux fld =
