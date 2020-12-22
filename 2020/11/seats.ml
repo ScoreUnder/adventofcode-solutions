@@ -52,6 +52,13 @@ module Field2D = struct
            f x y el)
 
   let count_if (f : 'a -> bool) (fld : 'a t) = fld.v |> Array.count_matching f
+
+  let show (fld : char t) =
+    let rec aux arr acc =
+      if Array.length arr = 0 then acc
+      else aux (Array.sub arr fld.w (Array.length arr - fld.w)) ((Array.sub arr 0 fld.w |> Array.enum |> String.of_enum) :: acc)
+    in
+    String.concat "\n" (List.rev (aux fld.v []))
 end
 
 let initial = File.lines_of "input" |> map String.enum |> Field2D.make
