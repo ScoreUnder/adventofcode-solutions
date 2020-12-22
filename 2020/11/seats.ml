@@ -52,17 +52,6 @@ module Field2D = struct
            f x y el)
 
   let count_if (f : 'a -> bool) (fld : 'a t) = fld.v |> Array.count_matching f
-
-  let find_mapi (type r) (f : int -> int -> 'a -> r option) (fld : 'a t) : r =
-    let exception StopWithValue of r in
-    try
-      fld
-      |> iteri (fun x y el ->
-             match f x y el with
-             | Some x -> raise (StopWithValue x)
-             | None -> ());
-      raise Not_found
-    with StopWithValue x -> x
 end
 
 let initial = File.lines_of "input" |> map String.enum |> Field2D.make
@@ -102,14 +91,9 @@ let cast_all_rays fld =
          |> map (fun (dx, dy) -> cast_ray (x + dx, y + dy) (x, y))
          |> Array.of_enum)
 
-let guaranteed_dot_pos fld =
-  fld
-  |> Field2D.find_mapi (fun x y elt -> if elt = '.' then Some (x, y) else None)
-
 let preprocess_rays fld =
-  let dot_pos = guaranteed_dot_pos fld in
-  let oob_to_dot = function -1, -1 -> dot_pos | x -> x in
-  fld |> cast_all_rays |> Field2D.map (Array.map oob_to_dot)
+  let no_oob = function -1, -1 -> false | x -> true in
+  fld |> cast_all_rays |> Field2D.map (Array.filter no_oob)
 
 let count_when_stable f =
   let rec aux fld =
