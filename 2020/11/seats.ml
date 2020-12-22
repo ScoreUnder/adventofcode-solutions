@@ -58,17 +58,21 @@ end
 
 let initial = File.lines_of "input" |> map String.enum |> Field2D.make
 
+let enum_count_gte f v e =
+  let rec aux v =
+    if v = 0 then true else if f (Enum.get_exn e) then aux (v - 1) else aux v
+  in
+  try aux v with Enum.No_more_elements -> false
+
 let next_state scan fld =
   fld
   |> Field2D.mapi (fun x y -> function
        | 'L' -> if scan fld x y |> exists (( = ) '#') then 'L' else '#'
        | '#' ->
-           if scan fld x y |> filter (( = ) '#') |> Enum.hard_count >= 5 then
-             'L'
-           else '#'
+           if scan fld x y |> enum_count_gte (( = ) '#') 5 then 'L' else '#'
        | x -> x)
 
-let cast_all_rays fld x y =
+let cast_all_rays fld =
   let rays =
     let dims = [ -1; 0; 1 ] in
     List.cartesian_product dims dims
@@ -77,13 +81,26 @@ let cast_all_rays fld x y =
   let width = Field2D.width fld in
   let height = Field2D.height fld in
   let rec cast_ray (x, y) (dx, dy) =
-    if x < 0 || y < 0 || x >= width || y >= height then '.'
+    if x < 0 || y < 0 || x >= width || y >= height then (-1, -1)
     else
       match Field2D.get fld x y with
       | '.' -> cast_ray (x + dy, y + dy) (dx, dy)
-      | x -> x
+      | _ -> (x, y)
   in
-  rays |> List.enum |> map (fun (dx, dy) -> cast_ray (x + dx, y + dy) (x, y))
+  fld
+  |> Field2D.mapi (fun x y _ ->
+         rays |> List.enum
+         |> map (fun (dx, dy) -> cast_ray (x + dx, y + dy) (x, y))
+         |> Array.of_enum)
+
+let guaranteed_dot_pos fld =
+  fld
+  |> Field2D.find_mapi (fun x y elt -> if elt = '.' then Some (x, y) else None)
+
+let preprocess_rays fld =
+  let dot_pos = guaranteed_dot_pos fld in
+  let oob_to_dot = function -1, -1 -> dot_pos | x -> x in
+  fld |> cast_all_rays |> Field2D.mapi (fun _ _ -> Array.map oob_to_dot)
 
 let count_when_stable f =
   let rec aux fld =
@@ -94,8 +111,13 @@ let count_when_stable f =
 
 let part1 () = count_when_stable (next_state Field2D.get3x3)
 
-let part2 () = count_when_stable (next_state cast_all_rays)
+let part2 () =
+  let rays = preprocess_rays initial in
+  count_when_stable
+    (next_state (fun f x y ->
+         Field2D.get rays x y |> Array.enum
+         |> map (fun (x, y) -> Field2D.get f x y)))
 
 let () =
-  printf "Part 1: %d occupied seats\n%!" (part1 ());
-  printf "Part 2: %d occupied seats\n%!" (part2 ())
+  printf "Part 1: %d occupied seats\n%!" (part1 ())(*;
+  printf "Part 2: %d occupied seats\n%!" (part2 ())*)
