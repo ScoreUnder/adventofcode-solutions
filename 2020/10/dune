@@ -1,0 +1,4 @@
+(executable
+ (name jolts)
+ (libraries batteries)
+ (modes byte exe))
