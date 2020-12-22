@@ -108,8 +108,6 @@ let preprocess_rays fld =
 let count_when_stable f =
   let rec aux fld =
     let next = f fld in
-    print_endline (Field2D.show next);
-    print_endline "";
     if fld = next then next else aux next
   in
   aux initial |> Field2D.count_if (( = ) '#')
