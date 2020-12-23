@@ -1,0 +1,4 @@
+(executable
+ (name bitmasks)
+ (libraries batteries zarith)
+ (modes byte exe))
