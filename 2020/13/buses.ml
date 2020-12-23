@@ -81,16 +81,14 @@ let part2 () =
       in
       acc_periods (start + (start2 * period)) (period * period2) (succ i)
   in
-  let rec try_mul k off period =
-    let time = (~$(buses.(largest_bus)) * ((k * period) + off)) - ~$largest_bus in
-    if Array.for_all (fun (i, bus) -> (~$i + time) mod ~$bus = zero) cbuses then time
-    else try_mul (succ k) off period
-  in
   let start, period = acc_periods one one zero in
-    printf "start = %s; period = %s\n%!" (to_string start) (to_string period);
-    let fullperiod = Array.fold_left (fun acc (_, bus) -> acc * ~$bus) one cbuses in
-      printf "p1 %s\np2 %s\n%!" (to_string period) (to_string fullperiod);
-  (try_mul one start period) mod fullperiod
+  let fullperiod =
+    Array.fold_left (fun acc (_, bus) -> lcm acc ~$bus) one cbuses
+  in
+  let time = (~$(buses.(largest_bus)) * start) - ~$largest_bus in
+  printf "start = %s; period = %s; fullperiod = %s; t = %s\n%!"
+    (to_string start) (to_string period) (to_string fullperiod) (to_string time);
+  time mod fullperiod
 
 let () =
   printf "Part 1: %d\n%!" (part1 ());
