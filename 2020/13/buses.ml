@@ -48,14 +48,6 @@ let ind_of_largest_bus compact_buses =
   let ind, _ = compact_buses |> Array.enum |> arg_max (fun (_, bus) -> bus) in
   ind
 
-let for_alli f arr =
-  let rec aux i =
-    if i >= Array.length arr then true
-    else if f i arr.(i) then aux (i + 1)
-    else false
-  in
-  aux 0
-
 let get_period start f =
   let open Z in
   let rec aux i = if f i then i else aux (succ i) in
