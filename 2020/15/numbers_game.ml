@@ -6,11 +6,7 @@ let play_game initial max_turns =
   let rec play_turn tn next =
     if tn = max_turns then next
     else
-      let mine =
-        match Hashtbl.find_opt acc next with
-        | Some prev_tn -> tn - prev_tn
-        | None -> 0
-      in
+      let mine = tn - BatHashtbl.find_default acc next tn in
       Hashtbl.replace acc next tn;
       play_turn (succ tn) mine
   in

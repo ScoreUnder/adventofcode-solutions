@@ -1,5 +1,6 @@
 (executable
  (name numbers_game)
+ (libraries batteries)
  (modes byte exe))
 (env
  (release
