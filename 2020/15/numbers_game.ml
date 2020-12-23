@@ -1,16 +1,17 @@
 open Printf
 
 let play_game initial max_turns =
-  let acc = Hashtbl.create 4000 in
+  let acc = Array.init max_turns (fun _ -> -1) in
   let max_turns = pred max_turns in
   let rec play_turn tn next =
     if tn = max_turns then next
     else
-      let mine = tn - BatHashtbl.find_default acc next tn in
-      Hashtbl.replace acc next tn;
+      let prev_tn = acc.(next) in
+      let mine = if prev_tn = (-1) then 0 else tn - prev_tn in
+      acc.(next) <- tn;
       play_turn (succ tn) mine
   in
-  initial |> List.iteri (fun i v -> Hashtbl.replace acc v i);
+  initial |> List.iteri (fun i v -> acc.(v) <- i);
   play_turn (List.length initial) 0
 
 let () =
