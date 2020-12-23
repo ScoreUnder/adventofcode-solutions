@@ -14,4 +14,6 @@ let play_game initial max_turns =
   in
     play_turn initial_turns (List.length initial) 0
 
-let () = printf "Part 1: %d\n%!" (play_game [8;11;0;19;1;2] 2020)
+let () =
+  printf "Part 1: %d\n%!" (play_game [8;11;0;19;1;2] 2020);
+  printf "Part 2: %d\n%!" (play_game [8;11;0;19;1;2] 30000000)
