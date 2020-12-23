@@ -1,0 +1,4 @@
+(executable
+ (name numbers_game)
+ (libraries batteries zarith)
+ (modes byte exe))
