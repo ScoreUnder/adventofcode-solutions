@@ -1,4 +1,6 @@
 (executable
  (name numbers_game)
- (libraries batteries zarith)
  (modes byte exe))
+(env
+ (release
+  (ocamlopt_flags (:standard -O3))))
