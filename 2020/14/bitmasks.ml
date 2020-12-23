@@ -37,17 +37,40 @@ let input =
          else failwith "bad instruction")
   |> List.of_enum
 
-let run_program () =
+let run_program memset =
   let rec run_one mem andm orm = function
     | Mask (andm, orm) :: tl -> run_one mem andm orm tl
     | Mem (addr, value) :: tl ->
-        run_one
-          (Map.add addr (Int64.logor (Int64.logand value andm) orm) mem)
-          andm orm tl
+        run_one (memset addr value andm orm mem) andm orm tl
     | [] -> mem
   in
-  run_one Map.empty 0xFFFFFFFFFL 0L input
+  run_one Map.empty 0xFFFFFFFFFL 0L input |> Map.values |> Enum.reduce Int64.add
 
-let part1 () = run_program () |> Map.values |> Enum.reduce Int64.add
+let memset_p1 addr value andm orm mem =
+  Map.add addr (Int64.logor (Int64.logand value andm) orm) mem
 
-let () = printf "Part 1: %Ld\n%!" (part1 ())
+let part1 () = run_program memset_p1
+
+let address_options andm orm addr =
+  let addr = Int64.logor addr orm in
+  let exes = Int64.logxor orm andm in
+  let rec split_addrs a n =
+    let nextn = Int64.shift_right n 1 in
+    if n = 0L then [ a ]
+    else if Int64.logand n exes = 0L then split_addrs a nextn
+    else
+      let a1 = Int64.logor a n in
+      let a0 = Int64.logxor a1 n in
+      List.rev_append (split_addrs a0 nextn) (split_addrs a1 nextn)
+  in
+  split_addrs addr (Int64.shift_left 1L 35)
+
+let memset_p2 addr value andm orm mem =
+  address_options andm orm addr
+  |> List.fold_left (fun acc addr -> Map.add addr value acc) mem
+
+let part2 () = run_program memset_p2
+
+let () =
+  printf "Part 1: %Ld\n%!" (part1 ());
+  printf "Part 2: %Ld\n%!" (part2 ())
