@@ -1,4 +1,4 @@
 (executable
  (name buses)
- (libraries batteries)
+ (libraries batteries zarith)
  (modes byte exe))
