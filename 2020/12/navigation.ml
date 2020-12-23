@@ -9,7 +9,7 @@ let navi_instructions =
          (instr, mag))
   |> List.of_enum
 
-let ( +% ) x y =
+let ( %+ ) x y =
   (* positive modulo *)
   ((x mod y) + y) mod y
 
@@ -22,8 +22,8 @@ let rec navigate x y dir = function
   | ('S', d) :: tl -> navigate x (y + d) dir tl
   | ('E', d) :: tl -> navigate (x + d) y dir tl
   | ('W', d) :: tl -> navigate (x - d) y dir tl
-  | ('L', d) :: tl -> navigate x y (dir - (d / 90) +% 4) tl
-  | ('R', d) :: tl -> navigate x y (dir + (d / 90) +% 4) tl
+  | ('L', d) :: tl -> navigate x y ((dir - (d / 90)) %+ 4) tl
+  | ('R', d) :: tl -> navigate x y ((dir + (d / 90)) %+ 4) tl
   | ('F', d) :: tl ->
       let vec = directions.(dir) in
       navigate (x + (d * vec.(0))) (y + (d * vec.(1))) dir tl
@@ -31,7 +31,7 @@ let rec navigate x y dir = function
   | _ -> assert false
 
 let coord_rotate x y times =
-  let times = times +% 4 in
+  let times = times %+ 4 in
   match times with
   | 0 -> (x, y)
   | 1 -> (-y, x)
