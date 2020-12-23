@@ -1,20 +1,21 @@
-use std::collections::HashMap;
 use std::vec::Vec;
 
-fn play_game(initial: Vec<u32>, max_turns: u32) -> u32 {
-    let mut acc: HashMap<u32, u32> = HashMap::new();
+fn play_game(initial: Vec<i32>, max_turns: i32) -> i32 {
+    let mut acc = Vec::new();
+    acc.resize_with(max_turns as usize, || -1);
     let max_turns = max_turns - 1;
 
-    let mut turn = 0u32;
+    let mut turn = 0;
     for value in initial.iter() {
-        acc.insert(*value, turn);
+        acc[*value as usize] = turn;
         turn += 1;
     }
 
-    let mut next = 0u32;
+    let mut next = 0;
     while turn != max_turns {
-        let mine = turn - acc.get(&next).unwrap_or(&turn);
-        acc.insert(next, turn);
+        let prev_tn = acc[next as usize];
+        let mine = if prev_tn == -1 { 0 } else { turn - prev_tn };
+        acc[next as usize] = turn;
         turn += 1;
         next = mine;
     }

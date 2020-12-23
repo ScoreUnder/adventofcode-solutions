@@ -1,5 +1,5 @@
 def play_game(initial, max_turns):
-    acc = {}
+    acc = [-1] * max_turns
     max_turns -= 1
 
     for turn, itm in enumerate(initial):
@@ -8,7 +8,8 @@ def play_game(initial, max_turns):
     tn = len(initial)
     next = 0
     while tn != max_turns:
-        mine = tn - acc.get(next, tn)
+        prev_tn = acc[next]
+        mine = 0 if prev_tn == -1 else tn - prev_tn
         acc[next] = tn
         tn += 1
         next = mine
